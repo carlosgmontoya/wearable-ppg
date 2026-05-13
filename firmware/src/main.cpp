@@ -29,7 +29,7 @@ MAX30105 particleSensor;
 
 void setup()
 {
-  debug.begin(9600);
+  debug.begin(115200);
   debug.println("MAX30105 Basic Readings Example");
 
   // Initialize sensor
@@ -44,11 +44,11 @@ void setup()
 
 void loop()
 {
-  debug.print(">Red: ");
+  debug.print(">Red:");
   debug.println(particleSensor.getRed());
-  debug.print(">IR: ");
+  debug.print(">IR:");
   debug.println(particleSensor.getIR());
-  debug.print(">Green: ");
+  debug.print(">Green:");
   debug.println(particleSensor.getGreen());
 
 }
