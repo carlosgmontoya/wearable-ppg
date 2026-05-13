@@ -1,54 +1,73 @@
-/*
-  MAX30105 Breakout: Output all the raw Red/IR/Green readings
-  By: Nathan Seidle @ SparkFun Electronics
-  Date: October 2nd, 2016
-  https://github.com/sparkfun/MAX30105_Breakout
-
-  Outputs all Red/IR/Green values.
-
-  Hardware Connections (Breakoutboard to Arduino):
-  -5V = 5V (3.3V is allowed)
-  -GND = GND
-  -SDA = A4 (or SDA)
-  -SCL = A5 (or SCL)
-  -INT = Not connected
-
-  The MAX30105 Breakout can handle 5V or 3.3V I2C logic. We recommend powering the board with 5V
-  but it will also run at 3.3V.
-
-  This code is released under the [MIT License](http://opensource.org/licenses/MIT).
-*/
 #include <Arduino.h>
 #include <Wire.h>
 #include "MAX30105.h"
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
 
 MAX30105 particleSensor;
 
-#define debug Serial //Uncomment this line if you're using an Uno or ESP
-//#define debug SerialUSB //Uncomment this line if you're using a SAMD21
+#define SERVICE_UUID        "9c4743dd-5fdf-4203-9ecf-c45dab140996"
+#define CHARACTERISTIC_UUID "4f2f616b-7983-49b5-a516-e0f7a5e6fec9"
 
-void setup()
-{
-  debug.begin(115200);
-  debug.println("MAX30105 Basic Readings Example");
+BLECharacteristic *pCharacteristic;
+bool deviceConnected = false;
 
-  // Initialize sensor
-  if (particleSensor.begin() == false)
-  {
-    debug.println("MAX30105 was not found. Please check wiring/power. ");
-    while (1);
-  }
+#define BUFFER_SIZE 250
+uint32_t buffer[BUFFER_SIZE];
+int bufferIndex = 0;
 
-  particleSensor.setup(); //Configure sensor. Use 6.4mA for LED drive
+class MyServerCallbacks : public BLEServerCallbacks {
+    void onConnect(BLEServer* pServer) {
+        deviceConnected = true;
+        Serial.println("Cliente conectado");
+    }
+    void onDisconnect(BLEServer* pServer) {
+        deviceConnected = false;
+        Serial.println("Cliente desconectado");
+        pServer->startAdvertising();
+    }
+};
+
+void setup() {
+    Serial.begin(115200);
+    Wire.begin();
+
+    if (particleSensor.begin(Wire, I2C_SPEED_FAST) == false) {
+        Serial.println("MAX30105 no encontrado");
+        while (1);
+    }
+    particleSensor.setup();
+
+    BLEDevice::init("Wearable-PPG");
+    BLEServer *pServer = BLEDevice::createServer();
+    pServer->setCallbacks(new MyServerCallbacks());
+
+    BLEService *pService = pServer->createService(SERVICE_UUID);
+    pCharacteristic = pService->createCharacteristic(
+        CHARACTERISTIC_UUID,
+        BLECharacteristic::PROPERTY_NOTIFY
+    );
+    pCharacteristic->addDescriptor(new BLE2902());
+    pService->start();
+
+    BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+    pAdvertising->addServiceUUID(SERVICE_UUID);
+    pAdvertising->start();
 }
 
-void loop()
-{
-  debug.print(">Red:");
-  debug.println(particleSensor.getRed());
-  debug.print(">IR:");
-  debug.println(particleSensor.getIR());
-  debug.print(">Green:");
-  debug.println(particleSensor.getGreen());
+void loop() {
+    buffer[bufferIndex++] = particleSensor.getIR();
 
+    if (bufferIndex >= BUFFER_SIZE) {
+        if (deviceConnected) {
+            pCharacteristic->setValue((uint8_t*)buffer, sizeof(buffer));
+            pCharacteristic->notify();
+            Serial.println("Bloque enviado");
+        } else {
+            Serial.println("BLE activo, sin cliente...");
+        }
+        bufferIndex = 0;
+    }
 }
