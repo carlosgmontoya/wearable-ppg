@@ -1,0 +1,12 @@
+{
+    "folders": [
+        {
+            "name": "Python",
+            "path": "."
+        },
+        {
+            "name": "Firmware",
+            "path": "firmware"
+        }
+    ]
+}

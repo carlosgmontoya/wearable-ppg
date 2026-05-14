@@ -30,7 +30,7 @@ MAX30105 particleSensor;
 void setup()
 {
   debug.begin(115200);
-  delay(2000)
+  delay(2000);
   debug.println("MAX30105 Basic Readings Example");
 
   // Initialize sensor

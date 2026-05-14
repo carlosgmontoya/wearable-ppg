@@ -14,7 +14,7 @@ MAX30105 particleSensor;
 BLECharacteristic *pCharacteristic;
 bool deviceConnected = false;
 
-#define BUFFER_SIZE 250
+#define BUFFER_SIZE 50
 uint32_t buffer[BUFFER_SIZE];
 int bufferIndex = 0;
 
