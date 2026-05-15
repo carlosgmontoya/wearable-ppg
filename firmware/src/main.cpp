@@ -15,7 +15,7 @@ void loop() {
 */
 
 // POO Ejemplo 2 de uso de clases en Arduino
-
+/*
 #include <Arduino.h>
 #include "buffer_ppg.h"
 
@@ -39,3 +39,29 @@ void loop() {
     delay(2000);
 
 };
+*/
+
+// POO Ejemplo 3 de uso de clases en Arduino
+
+#include <Arduino.h>
+#include "dispositivo_ble.h"
+
+DispositivoBLE dispositivo("Wearable-PPG");
+
+void setup() {
+    Serial.begin(115200);
+};
+
+void loop() {
+
+    dispositivo.conectar();
+    delay(2000);
+    Serial.println("¿Dispositivo conectado? " + String(dispositivo.estaConectado()));
+    delay(2000);
+    dispositivo.desconectar();
+    delay(2000);
+    Serial.println("¿Dispositivo conectado después de desconectar? " + String(dispositivo.estaConectado()));
+    delay(2000);
+
+};
+
