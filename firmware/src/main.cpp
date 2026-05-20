@@ -1,4 +1,37 @@
 #include <Arduino.h>
+#include "sensor_ppg2.h"
+
+SensorPPG sensor(2347, 50, 128);
+
+void setup() {
+    Serial.begin(115200);
+};
+
+void loop() {
+    sensor.info();
+    Serial.println(sensor.leer());
+    delay(2000);
+};
+
+/*
+#include <Arduino.h>
+#include "dispositivo.h"
+
+Dispositivo dispositivo1(2345, 30);
+Dispositivo dispositivo2(2346, 20);
+
+void setup(){
+    Serial.begin(115200);
+};
+
+void loop(){
+    dispositivo1.info();
+    dispositivo2.info();
+    delay(2000);
+};
+*/
+
+/*#include <Arduino.h>
 #include "sensor_ppg.h"
 #include "buffer_ppg.h"
 #include "servidor_ble.h"
@@ -33,6 +66,8 @@ void loop() {
         buffer.limpiar();
     }
 }
+
+*/
 
 /* POO Ejemplo 1 de uso de clases en Arduino
 #include <Arduino.h>
