@@ -1,4 +1,37 @@
 #include <Arduino.h>
+#include "sensorIR.h"
+#include "sensor.h"
+
+SensorIR sensoriux(2349);
+
+void setup() {
+    Serial.begin(115200);
+};
+
+void loop() {
+    Serial.println(sensoriux.leer());
+    delay(2000);
+};
+
+/*
+#include <Arduino.h>
+#include "sensor.h"
+
+Sensor sensor(2348);
+
+void setup() {
+    Serial.begin(115200);
+};
+
+void loop() {
+    Serial.println(sensor.leer());
+    sensor.imprimirId();
+    delay(2000);
+};
+*/
+
+/*
+#include <Arduino.h>
 #include "sensor_ppg2.h"
 
 SensorPPG sensor(2347, 50, 128);
@@ -12,6 +45,7 @@ void loop() {
     Serial.println(sensor.leer());
     delay(2000);
 };
+*/
 
 /*
 #include <Arduino.h>
