@@ -1,8 +1,7 @@
 #include <Arduino.h>
-#include "sensorIR.h"
-#include "sensor.h"
+#include "sensorRojo.h"
 
-SensorIR sensoriux(2349);
+SensorRojo sensoriux(2349);
 
 void setup() {
     Serial.begin(115200);
