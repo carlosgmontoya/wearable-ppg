@@ -1,4 +1,48 @@
 #include <Arduino.h>
+#include "ledIndicador.h"
+#include "ledMorse.h"
+
+
+LedMorse led(LED_BUILTIN);
+
+void setup() {
+    Serial.begin(115200);
+    pinMode(LED_BUILTIN, OUTPUT);
+};
+
+void loop() {
+    Serial.println("punto...");
+    led.punto();
+    delay(500);
+    Serial.println("raya...");
+    led.raya();
+    Serial.println("SOS...");
+    led.SOS();
+};
+
+/*
+#include <Arduino.h>
+#include "ledIndicador.h"
+
+LedIndicador led(LED_BUILTIN);
+
+void setup() {
+    Serial.begin(115200);
+    pinMode(LED_BUILTIN, OUTPUT);
+};
+
+void loop() {
+    led.encender();
+    delay(2000);
+    Serial.println(led.estaEncendido());
+    led.apagar();
+    Serial.println(led.estaEncendido());
+    delay(2000);
+};
+*/
+
+/*
+#include <Arduino.h>
 #include "sensorRojo.h"
 
 SensorRojo sensoriux(2349);
@@ -11,6 +55,7 @@ void loop() {
     Serial.println(sensoriux.leer());
     delay(2000);
 };
+*/
 
 /*
 #include <Arduino.h>
