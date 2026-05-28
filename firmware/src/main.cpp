@@ -1,23 +1,45 @@
 #include <Arduino.h>
-#include "ledIndicador.h"
-#include "ledMorse.h"
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
 
+#define SERVICE_UUID        "9c4743dd-5fdf-4203-9ecf-c45dab140996"
+#define CHARACTERISTIC_UUID "4f2f616b-7983-49b5-a516-e0f7a5e6fec9"
 
-LedMorse led(LED_BUILTIN);
+BLECharacteristic *pCaracteristica;
 
 void setup() {
     Serial.begin(115200);
+    BLEDevice::init("ESP32-BLE");
+
+    BLEServer *pServer = BLEDevice::createServer();
+    BLEService *pService = pServer->createService(SERVICE_UUID);
+    pCaracteristica = pService->createCharacteristic(
+        CHARACTERISTIC_UUID,
+        BLECharacteristic::PROPERTY_NOTIFY
+    );
+    pCaracteristica->addDescriptor(new BLE2902());
+    pService->start();
+
+//    BLEDevice::getAdvertising()->start();
+    Serial.println("BLE listo");
     pinMode(LED_BUILTIN, OUTPUT);
 };
 
 void loop() {
-    Serial.println("punto...");
-    led.punto();
-    delay(500);
-    Serial.println("raya...");
-    led.raya();
-    Serial.println("SOS...");
-    led.SOS();
+    // Aquí podrías agregar código para manejar conexiones BLE, enviar datos, etc.
+    BLEDevice::getAdvertising()->start();
+    if (pCaracteristica != nullptr) {
+        int valor = random(800, 1200);
+        pCaracteristica->setValue(valor);
+        pCaracteristica->notify();
+    }
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(1000);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(1000);
+    Serial.println("LED toggled");
 };
 
 /*
