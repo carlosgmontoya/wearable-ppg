@@ -1,4 +1,71 @@
 #include <Arduino.h>
+#include <Wire.h>
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+#include "MAX30105.h"
+
+#define SERVICE_UUID        "9c4743dd-5fdf-4203-9ecf-c45dab140996"
+#define CHARACTERISTIC_UUID "4f2f616b-7983-49b5-a516-e0f7a5e6fec9"
+#define BUFFER_SIZE 1
+
+MAX30105 particleSensor;
+BLECharacteristic *pCaracteristica;
+uint32_t buffer[BUFFER_SIZE];
+int bufferIndex = 0;
+
+class MisCallbacks : public BLEServerCallbacks {
+    void onDisconnect(BLEServer* pServer) {
+        BLEDevice::getAdvertising()->start();
+    }
+};
+
+void setup() {
+    Serial.begin(115200);
+    delay(2000);
+    Serial.println("Iniciando...");
+    Wire.begin();
+    
+    if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) {
+        Serial.println("Sensor no encontrado");
+        while(1);
+    }
+    Serial.println("Sensor encontrado!");
+
+    particleSensor.setup();
+    byte ledBrightness = 60;
+    byte sampleAverage = 4;
+    byte ledMode = 3;  // 1=Red, 2=Red+IR, 3=Red+IR+Green
+    int sampleRate = 400;
+    int pulseWidth = 411;
+    int adcRange = 16384;
+    particleSensor.setup(ledBrightness, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange);
+
+    BLEDevice::init("Wearable-PPG");
+    BLEServer *pServer = BLEDevice::createServer();
+    pServer->setCallbacks(new MisCallbacks());
+    BLEService *pService = pServer->createService(SERVICE_UUID);
+    pCaracteristica = pService->createCharacteristic(
+        CHARACTERISTIC_UUID,
+        BLECharacteristic::PROPERTY_NOTIFY
+    );
+    pCaracteristica->addDescriptor(new BLE2902());
+    pService->start();
+    BLEDevice::getAdvertising()->start();
+    Serial.println("Sistema listo");
+    pinMode(LED_BUILTIN, OUTPUT);
+}
+
+void loop() {
+    uint32_t valor = random(800, 1200);
+    pCaracteristica->setValue((uint8_t*)&valor, sizeof(valor));
+    pCaracteristica->notify();
+    delay(4);  // 250 Hz
+}
+
+/*
+#include <Arduino.h>
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
@@ -35,12 +102,17 @@ void loop() {
         pCaracteristica->setValue(valor);
         pCaracteristica->notify();
     }
+
+    BLEAddress address = BLEDevice::getAddress();
+    Serial.println(address.toString().c_str());
+
     digitalWrite(LED_BUILTIN, HIGH);
     delay(1000);
     digitalWrite(LED_BUILTIN, LOW);
     delay(1000);
     Serial.println("LED toggled");
 };
+*/
 
 /*
 #include <Arduino.h>
