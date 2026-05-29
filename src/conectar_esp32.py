@@ -2,6 +2,7 @@ import asyncio
 from bleak import BleakClient
 import struct
 import socket
+import time
 
 udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -32,17 +33,17 @@ def al_recibir(sender, data):
         return
     muestras = list(struct.unpack(f'{len(data)//4}I', data))
     for muestra in muestras:
-        mensaje = f">green:{muestra}\n"
+        print(f"Valor: {muestra}")
+        mensaje = f"green:{muestra}\n"
         udp.sendto(mensaje.encode(), ("127.0.0.1", 47269))
 
 async def conectar(direccion):
     async with BleakClient(direccion) as cliente:
         print(f"Conectado a {direccion}")
         await cliente.start_notify(CHARACTERISTIC_UUID, al_recibir)
-        await asyncio.sleep(0.5)
         print("Suscrito, esperando datos...")
-        await asyncio.sleep(30)
-        print("Terminando...")
+        while True:
+            await asyncio.sleep(1)
 
 
 

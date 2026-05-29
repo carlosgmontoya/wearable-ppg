@@ -8,7 +8,7 @@
 
 #define SERVICE_UUID        "9c4743dd-5fdf-4203-9ecf-c45dab140996"
 #define CHARACTERISTIC_UUID "4f2f616b-7983-49b5-a516-e0f7a5e6fec9"
-#define BUFFER_SIZE 1
+#define BUFFER_SIZE 16
 
 MAX30105 particleSensor;
 BLECharacteristic *pCaracteristica;
@@ -57,13 +57,20 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
 }
 
+//void loop() {
+//    uint32_t valor = random(800, 1200);
+//    pCaracteristica->setValue((uint8_t*)&valor, sizeof(valor));
+//    pCaracteristica->notify();
+//    delay(2000);  // un dato cada 2 segundos
+
+
 void loop() {
     uint32_t valor = random(800, 1200);
     pCaracteristica->setValue((uint8_t*)&valor, sizeof(valor));
     pCaracteristica->notify();
-    delay(4);  // 250 Hz
+    delay(50);
 }
-
+    
 /*
 #include <Arduino.h>
 #include <BLEDevice.h>
