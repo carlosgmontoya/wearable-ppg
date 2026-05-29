@@ -68,22 +68,18 @@ void setup() {
 int contadorSensor = 0;
 unsigned long tiempoInicio = 0;
 
+uint32_t ts_primera_muestra = 0;
+
 void loop() {
-    buffer[bufferIndex++] = particleSensor.getGreen();
-    contadorSensor++;
-    
-    if (millis() - tiempoInicio >= 1000) {
-        Serial.println("Muestras/s: " + String(contadorSensor));
-        contadorSensor = 0;
-        tiempoInicio = millis();
+    if (bufferIndex == 0) {
+        ts_primera_muestra = millis();  // timestamp de la primera muestra
     }
+    buffer[bufferIndex++] = particleSensor.getGreen();
     
     if (bufferIndex >= BUFFER_SIZE) {
-        uint32_t ts = millis();
-        // Enviar timestamp + buffer
-        uint8_t paquete[sizeof(ts) + sizeof(buffer)];
-        memcpy(paquete, &ts, sizeof(ts));
-        memcpy(paquete + sizeof(ts), buffer, sizeof(buffer));
+        uint8_t paquete[sizeof(ts_primera_muestra) + sizeof(buffer)];
+        memcpy(paquete, &ts_primera_muestra, sizeof(ts_primera_muestra));
+        memcpy(paquete + sizeof(ts_primera_muestra), buffer, sizeof(buffer));
         pCaracteristica->setValue(paquete, sizeof(paquete));
         pCaracteristica->notify();
         bufferIndex = 0;
