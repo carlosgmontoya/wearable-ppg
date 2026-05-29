@@ -35,10 +35,10 @@ void setup() {
 
     particleSensor.setup();
     byte ledBrightness = 60;
-    byte sampleAverage = 4;
+    byte sampleAverage = 1;
     byte ledMode = 3;  // 1=Red, 2=Red+IR, 3=Red+IR+Green
     int sampleRate = 400;
-    int pulseWidth = 411;
+    int pulseWidth = 215;
     int adcRange = 16384;
     particleSensor.setup(ledBrightness, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange);
 
@@ -64,11 +64,30 @@ void setup() {
 //    delay(2000);  // un dato cada 2 segundos
 
 
+
+int contadorSensor = 0;
+unsigned long tiempoInicio = 0;
+
 void loop() {
-    uint32_t valor = random(800, 1200);
-    pCaracteristica->setValue((uint8_t*)&valor, sizeof(valor));
-    pCaracteristica->notify();
-    delay(50);
+    buffer[bufferIndex++] = particleSensor.getGreen();
+    contadorSensor++;
+    
+    if (millis() - tiempoInicio >= 1000) {
+        Serial.println("Muestras/s: " + String(contadorSensor));
+        contadorSensor = 0;
+        tiempoInicio = millis();
+    }
+    
+    if (bufferIndex >= BUFFER_SIZE) {
+        uint32_t ts = millis();
+        // Enviar timestamp + buffer
+        uint8_t paquete[sizeof(ts) + sizeof(buffer)];
+        memcpy(paquete, &ts, sizeof(ts));
+        memcpy(paquete + sizeof(ts), buffer, sizeof(buffer));
+        pCaracteristica->setValue(paquete, sizeof(paquete));
+        pCaracteristica->notify();
+        bufferIndex = 0;
+    }
 }
     
 /*
